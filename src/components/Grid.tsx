@@ -1,5 +1,5 @@
 import { defaultRangeExtractor, useVirtualizer } from '@tanstack/react-virtual'
-import React, { ReactNode, RefObject, useEffect } from 'react'
+import React, { ReactElement, ReactNode, RefObject, useEffect } from 'react'
 import {
   Cell,
   Column,
@@ -10,6 +10,7 @@ import {
 import cx from 'classnames'
 import { Cell as CellComponent } from './Cell'
 import { useMemoizedIndexCallback } from '../hooks/useMemoizedIndexCallback'
+import { Virtualizer } from "@tanstack/virtual-core";
 
 export const Grid = <T extends any>({
   data,
@@ -35,6 +36,7 @@ export const Grid = <T extends any>({
   duplicateRows,
   insertRowAfter,
   stopEditing,
+  customTopRows
 }: {
   data: T[]
   columns: Column<T, any, any>[]
@@ -59,6 +61,7 @@ export const Grid = <T extends any>({
   duplicateRows: (rowMin: number, rowMax?: number) => void
   insertRowAfter: (row: number, count?: number) => void
   stopEditing: (opts?: { nextRow?: boolean }) => void
+  customTopRows?: (colVirtualizer:Virtualizer<any, unknown> )=>ReactElement[],
 }) => {
   const rowVirtualizer = useVirtualizer({
     count: data.length,
@@ -171,6 +174,7 @@ export const Grid = <T extends any>({
             ))}
           </div>
         )}
+        {customTopRows&&customTopRows(colVirtualizer)}
         {rowVirtualizer.getVirtualItems().map((row) => {
           const rowActive = Boolean(
             row.index >= (selectionMinRow ?? Infinity) &&
