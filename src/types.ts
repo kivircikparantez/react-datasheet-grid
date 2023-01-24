@@ -156,7 +156,7 @@ export type DataSheetGridProps<T> = {
   onBlur?: (opts: { cell: CellWithId }) => void
   onActiveCellChange?: (opts: { cell: CellWithId | null }) => void
   onSelectionChange?: (opts: { selection: SelectionWithId | null }) => void
-  customTopRows?: (colVirtualizer:Virtualizer<any, unknown> )=>ReactElement[]
+  customHeaderComponent?: (colVirtualizer:Virtualizer<any, unknown> )=>ReactElement
 }
 
 type CellWithIdInput = {

@@ -84,7 +84,7 @@ export const DataSheetGrid = React.memo(
         onSelectionChange = DEFAULT_EMPTY_CALLBACK,
         rowClassName,
         cellClassName,
-        customTopRows
+        customHeaderComponent,
       }: DataSheetGridProps<T>,
       ref: React.ForwardedRef<DataSheetGridRef>
     ): JSX.Element => {
@@ -837,7 +837,7 @@ export const DataSheetGrid = React.memo(
         ]
       )
       useDocumentEventListener('paste', onPaste)
-
+      const [isLastClickOutside, setIsLastClickOutside] = useState(false)
       const onMouseDown = useCallback(
         (event: MouseEvent) => {
           if (contextMenu && contextMenuItems.length) {
@@ -848,8 +848,12 @@ export const DataSheetGrid = React.memo(
             event.button === 2 || (event.button === 0 && event.ctrlKey)
           const clickInside =
             innerRef.current?.contains(event.target as Node) || false
+          setIsLastClickOutside(!clickInside)
 
-          const cursorIndex = clickInside
+          if (!clickInside) {
+            return
+          }
+          const cursorIndex = clickInside //TODO : suçlu burda
             ? getCursorIndex(event, true, true)
             : null
 
@@ -1234,7 +1238,7 @@ export const DataSheetGrid = React.memo(
 
       const onKeyDown = useCallback(
         (event: KeyboardEvent) => {
-          if (!activeCell) {
+          if (!activeCell || isLastClickOutside) {
             return
           }
 
@@ -1442,21 +1446,22 @@ export const DataSheetGrid = React.memo(
         },
         [
           activeCell,
+          isLastClickOutside,
           columns,
+          hasStickyRightColumn,
           data.length,
-          deleteSelection,
-          duplicateRows,
-          editing,
-          insertRowAfter,
-          isCellDisabled,
-          scrollTo,
-          selection?.max.row,
-          selection?.min.row,
-          selectionCell,
           setActiveCell,
           setSelectionCell,
+          editing,
+          selectionCell,
+          isCellDisabled,
           stopEditing,
-          hasStickyRightColumn,
+          scrollTo,
+          insertRowAfter,
+          selection?.max.row,
+          selection?.min.row,
+          duplicateRows,
+          deleteSelection,
         ]
       )
       useDocumentEventListener('keydown', onKeyDown)
@@ -1615,7 +1620,7 @@ export const DataSheetGrid = React.memo(
         onSelectionChange,
       })
       callbacksRef.current.onFocus = onFocus
-      callbacksRef.current.onBlur = onBlur
+      // callbacksRef.current.onBlur = onBlur
       callbacksRef.current.onActiveCellChange = onActiveCellChange
       callbacksRef.current.onSelectionChange = onSelectionChange
 
@@ -1662,7 +1667,6 @@ export const DataSheetGrid = React.memo(
         activeCell?.row,
         columns,
       ])
-
       return (
         <div className={className} style={style}>
           <div
@@ -1696,7 +1700,7 @@ export const DataSheetGrid = React.memo(
             duplicateRows={duplicateRows}
             stopEditing={stopEditing}
             cellClassName={cellClassName}
-            customTopRows={customTopRows}
+            customHeaderComponent={customHeaderComponent}
           >
             <SelectionRect
               columnRights={columnRights}
@@ -1738,7 +1742,9 @@ export const DataSheetGrid = React.memo(
               clientY={contextMenu.y}
               cursorIndex={contextMenu.cursorIndex}
               items={contextMenuItems}
-              close={() => setContextMenu(null)}
+              close={() => {
+                setContextMenu(null)
+              }}
             />
           )}
         </div>
