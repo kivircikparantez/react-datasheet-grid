@@ -40,6 +40,7 @@ import {
 import { getAllTabbableElements } from '../utils/tab'
 import { Grid } from './Grid'
 import { SelectionRect } from './SelectionRect'
+import { useRowHeights } from '../hooks/useRowHeights'
 
 const DEFAULT_DATA: any[] = []
 const DEFAULT_COLUMNS: Column<any, any, any>[] = []
@@ -66,7 +67,7 @@ export const DataSheetGrid = React.memo(
         onChange = DEFAULT_EMPTY_CALLBACK,
         columns: rawColumns = DEFAULT_COLUMNS,
         rowHeight = 40,
-        headerRowHeight = rowHeight,
+        headerRowHeight = typeof rowHeight === 'number' ? rowHeight : 40,
         gutterColumn,
         stickyRightColumn,
         rowKey,
@@ -100,10 +101,15 @@ export const DataSheetGrid = React.memo(
       // Default value is 1 for the border
       const [heightDiff, setHeightDiff] = useDebounceState(1, 100)
 
+      const { getRowSize, totalSize, getRowIndex } = useRowHeights({
+        value: data,
+        rowHeight,
+      })
+
       // Height of the list (including scrollbars and borders) to display
       const displayHeight = Math.min(
         maxHeight,
-        headerRowHeight + data.length * rowHeight + heightDiff
+        headerRowHeight + totalSize(maxHeight) + heightDiff
       )
 
       // Width and height of the scrollable area
@@ -256,10 +262,7 @@ export const DataSheetGrid = React.memo(
 
             return {
               col: columnRights.findIndex((right) => x < right) - 1,
-              row: Math.min(
-                data.length - 1,
-                Math.max(-1, Math.floor((y - headerRowHeight) / rowHeight))
-              ),
+              row: getRowIndex(y - headerRowHeight),
             }
           }
 
@@ -272,8 +275,8 @@ export const DataSheetGrid = React.memo(
           getInnerBoundingClientRect,
           getOuterBoundingClientRect,
           headerRowHeight,
-          rowHeight,
           hasStickyRightColumn,
+          getRowIndex,
         ]
       )
 
@@ -380,10 +383,14 @@ export const DataSheetGrid = React.memo(
 
           if (!cell.doNotScrollY) {
             // Align top
-            const topMax = cell.row * rowHeight
+            const topMax = getRowSize(cell.row).top
             // Align bottom
             const topMin =
-              (cell.row + 1) * rowHeight + headerRowHeight - height + 1
+              getRowSize(cell.row).top +
+              getRowSize(cell.row).height +
+              headerRowHeight -
+              height +
+              1
             // eslint-disable-next-line @typescript-eslint/ban-ts-comment
             // @ts-ignore
             const scrollTop = outerRef.current!.scrollTop
@@ -425,10 +432,10 @@ export const DataSheetGrid = React.memo(
         [
           height,
           width,
-          rowHeight,
           headerRowHeight,
           columnRights,
           columnWidths,
+          getRowSize,
           hasStickyRightColumn,
         ]
       )
@@ -1242,6 +1249,10 @@ export const DataSheetGrid = React.memo(
             return
           }
 
+          if (event.isComposing) {
+            return
+          }
+
           // Tab from last cell of a row
           if (
             event.key === 'Tab' &&
@@ -1410,7 +1421,7 @@ export const DataSheetGrid = React.memo(
             )
             event.preventDefault()
           } else if (
-            event.key.match(/^[ -~]$/) &&
+            (event.key.match(/^[ -~]$/) || event.code.match(/Key[A-Z]$/)) &&
             !event.ctrlKey &&
             !event.metaKey &&
             !event.altKey
@@ -1688,7 +1699,7 @@ export const DataSheetGrid = React.memo(
             headerRowHeight={headerRowHeight}
             activeCell={activeCell}
             innerRef={innerRef}
-            rowHeight={rowHeight}
+            rowHeight={getRowSize}
             rowKey={rowKey}
             selection={selection}
             rowClassName={rowClassName}
@@ -1708,7 +1719,7 @@ export const DataSheetGrid = React.memo(
               activeCell={activeCell}
               selection={selection}
               headerRowHeight={headerRowHeight}
-              rowHeight={rowHeight}
+              rowHeight={getRowSize}
               hasStickyRightColumn={hasStickyRightColumn}
               dataLength={data.length}
               viewHeight={height}
