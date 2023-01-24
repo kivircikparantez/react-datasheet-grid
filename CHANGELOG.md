@@ -1,5 +1,30 @@
 # Change Log
 
+## 4.9.3
+> Date: 2023-01-20
+### Fix
+- Better support for non-english characters
+
+## 4.9.2
+> Date: 2022-12-27
+### Fix
+- Date columns now support `YYYY.MM.DD` format and max year is 9999
+
+## 4.9.1
+> Date: 2022-12-19
+### Fix
+- Date columns now support `YYYY. MM. DD` and `YYYY/MM/DD` format
+
+## 4.9.0
+> Date: 2022-12-03
+### Added
+- Support for custom row height
+
+## 4.8.1
+> Date: 2022-11-23
+### Fixed
+- Duplicate characters issue when typing in Korean or other composable languages
+
 ## 4.8.0
 > Date: 2022-11-18
 ### Added

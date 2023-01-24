@@ -62,7 +62,7 @@ export type SelectionContextType = {
   activeCell: Cell | null
   selection: Selection | null
   dataLength: number
-  rowHeight: number
+  rowHeight: (index: number) => { height: number; top: number }
   hasStickyRightColumn: boolean
   editing: boolean
   isCellDisabled: (cell: Cell) => boolean
@@ -138,7 +138,7 @@ export type DataSheetGridProps<T> = {
   stickyRightColumn?: SimpleColumn<T, any>
   rowKey?: string | ((opts: { rowData: T; rowIndex: number }) => string)
   height?: number
-  rowHeight?: number
+  rowHeight?: number | ((opt: { rowData: T; rowIndex: number }) => number)
   headerRowHeight?: number
   addRowsComponent?:
     | ((props: AddRowsComponentProps) => React.ReactElement | null)

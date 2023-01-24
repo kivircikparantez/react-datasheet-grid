@@ -46,7 +46,7 @@ export const Grid = <T extends any>({
   hasStickyRightColumn: boolean
   displayHeight: number
   headerRowHeight: number
-  rowHeight: number
+  rowHeight: (index: number) => { height: number }
   rowKey: DataSheetGridProps<T>['rowKey']
   rowClassName: DataSheetGridProps<T>['rowClassName']
   cellClassName: DataSheetGridProps<T>['cellClassName']
@@ -69,7 +69,7 @@ export const Grid = <T extends any>({
     count: data.length,
     getScrollElement: () => outerRef.current,
     paddingStart: headerRowHeight,
-    estimateSize: () => rowHeight,
+    estimateSize: (index) => rowHeight(index).height,
     getItemKey: (index: number): React.Key => {
       if (rowKey && index > 0) {
         const row = data[index - 1]
@@ -88,7 +88,6 @@ export const Grid = <T extends any>({
       }
       return index
     },
-    enableSmoothScroll: false,
     overscan: 5,
   })
 
@@ -98,7 +97,6 @@ export const Grid = <T extends any>({
     estimateSize: (index) => columnWidths?.[index] ?? 100,
     horizontal: true,
     getItemKey: (index: number): React.Key => columns[index].id ?? index,
-    enableSmoothScroll: false,
     overscan: 1,
     rangeExtractor: (range) => {
       const result = defaultRangeExtractor(range)
